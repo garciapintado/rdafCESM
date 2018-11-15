@@ -1,0 +1,50 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+
+% \VignetteIndexEntry{ rdafCESM: starting point with rdafCESM}
+
+\usepackage{color}
+
+\usepackage{Sweave}
+\newcommand{\strong}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+\let\pkg=\strong
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\proglang}[1]{{\bf #1}}
+
+\title{ Starting with the \pkg{rdafCESM} package }
+\author{Javier Garcia-Pintado\footnote{MARUM -- Center for Marine Environmental Sciences,
+University of Bremen, Leobener Str. 8, D-28359 Bremen, Germany.
+\code{jgarciapintado@marum.de}}
+}
+\date{October 2018}
+
+\addtolength{\oddsidemargin}{-.875in}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+The \pkg{rdafCESM} package provides functions to ease prototyping of ensemble assimilation with the Community Earth System Model (CESM) within the \proglang{R} environment with support of the package \pkg{rDAF}. The specific formats needed by \pkg{rDAF} are described in its corresponding vignette. The main assimilation function in this package is {\tt cesmDA}. An example dataset as template and starting point is provided within the {\tt dataset} folder installed along with the package. This provides an example for a specific case. Another key file in this package is {\tt cesm\_setup.R} within the folder {\tt scripts} also included in the package installation. To start with, one needs to locate the file {\tt main.R}, provided in the example dataset. After some initial user input, this file calls the script {\tt cesm\_setup.R}, which in turn depends on the functions provided in this package. The reason by which {\tt cesm\_setup.R} has been provided as a script instead of as a function is because it is very likely that potential users will need to modify this (generic but still add-hoc) script to their needs. Thus, one would generally use the dataset files as template for the input files, and update within {\tt main.R} the call to the user-adapted version of {\tt cesm\_setup.R}. 
+
+The package \pkg{rdafCESM} is loaded by 
+<<>>= 
+library(rdafCESM)
+@
+
+As an application example, Garc\'ia-Pintado and Paul (2018) made use of this package.
+
+\section*{References}
+\begin{description}
+\item Garcia-Pintado J, Paul A.
+Evaluation of Kalman smoother schemes for past climate analysis with
+comprehensive Earth System Models.
+\textit{Geoscientific Model Development} 2018.
+\end{description}
+
+\end{document}
+
