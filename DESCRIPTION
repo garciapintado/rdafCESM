@@ -1,0 +1,11 @@
+Package: rdafCESM
+Version: 1.0-1
+Type: Package
+Title: setup and assimilation of CESM
+Date: 2018-10-25
+Imports: MASS, Matrix, ncdf4, rDAF, stats, splancs
+Author: Javier Garcia-Pintado
+Maintainer: Javier Garcia-Pintado <jgarciapintado@marum.de>
+Description: Setup of CESM and assimilation via R scripts and the rDAF package. 
+License: GPL (>=2)
+URL: https://github.com/garciapintado/rdafCESM

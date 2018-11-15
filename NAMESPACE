@@ -1,0 +1,12 @@
+exportPattern("^[[:alpha:]]+")
+
+import(Matrix, except=tail)
+import(
+    ncdf4,
+    rDAF,
+    splancs
+)
+
+importFrom("MASS", "mvrnorm")
+importFrom("stats", "qnorm", "quantile", "sd", "shapiro.test")
+
