@@ -235,8 +235,8 @@ allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0")           # clima
           nc_close(nci)
           isna <- is.na(POP2.TEMP.1)
 
-          SST[tboo,im] <- interppEarth(TLONG$val[!isna], TLAT$val[!isna], POP2.TEMP.1[!isna],
-                                       xo=gauDA[[ik]]$pos[tboo,1], yo=gauDA[[ik]]$pos[tboo,2])
+          SST[tboo,im] <- interpEarth(TLONG$val[!isna], TLAT$val[!isna], POP2.TEMP.1[!isna],
+                                      xo=gauDA[[ik]]$pos[tboo,1], yo=gauDA[[ik]]$pos[tboo,2], output='points')
         }
       } # end getting SST at matching times
       # HEfoo <-  gauDA[[ik]]$HE
@@ -283,8 +283,8 @@ allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0")           # clima
         for (im in 1:m) {
           if (is.null(dualKIND$val[[timelab]][[im]]))
             next
-          gauDA[[ik]]$HE[tboo,im] <- interppEarth(TLONG$val[!isna], TLAT$val[!isna], dualKIND$val[[timelab]][[im]][!isna],    # if (yKIND %in% onU) use ULONG,ULAT instead (i.e. velocity grid)
-                                                  xo=gauDA[[ik]]$pos[tboo,1], yo=gauDA[[ik]]$pos[tboo,2])
+          gauDA[[ik]]$HE[tboo,im] <- interpEarth(TLONG$val[!isna], TLAT$val[!isna], dualKIND$val[[timelab]][[im]][!isna], # if (yKIND %in% onU) use ULONG,ULAT (velocity grid)
+                                                 xo=gauDA[[ik]]$pos[tboo,1], yo=gauDA[[ik]]$pos[tboo,2], output = 'grid')
         }
       }
       rm(ytimelabs, timelab, dualKIND, tboo)
