@@ -9,7 +9,7 @@ xmlchanges <- function(xmlf,x,im=NULL) {
      if (is.null(im) || im > m || im < 1)
        stop('xmlchanges:: check im input')
    }
-   syscmd <- paste('xmlchange ',
+   syscmd <- paste('./xmlchange ',
                   '-file',xmlf,
                   '-id',  names(x)[i],
                   '-val', ifelse(m == 1, x[[i]], x[[i]][im]))
