@@ -28,7 +28,7 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
   if (is.null(comps))
     comps <- allcomps
   if (!all(comps %in% allcomps))
-    stop('getClimTS:: input comps not defined in CESM compset')  
+    stop('getClimTS:: input comps not defined in CESM compset') 
   comph <- allcomph[match(comps, allcomps)]
   
   seasons <- list()
@@ -49,12 +49,12 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
       coh <- comph[ic]      
       dsni   <- file.path(DOUT_S_ROOT[im],com,'hist')
       if (!file.exists(dsni)) {
-        if (allowNA)
+        if (allowNA) {
           next
-        else
+        } else {
           stop('getClimTS: simulation not found for:',CASE[im])
+        }
       }
-
       dsno <- file.path(DOUT_S_ROOT[im],com,'post')
       if (!is.null(loop))                                         # loop subfolder
         dsno <- file.path(dsno,loop)
@@ -71,8 +71,8 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
         metlimStr <- tlimStr
       }
 
-      staT    <-  as.POSIXct(metlimStr[1], tz='GMT', format="%Y-%m-%d %H:%M:%S")
-      endT    <-  as.POSIXct(metlimStr[2], tz='GMT', format="%Y-%m-%d %H:%M:%S")
+      staT <-  as.POSIXct(metlimStr[1], tz='GMT', format="%Y-%m-%d %H:%M:%S")
+      endT <-  as.POSIXct(metlimStr[2], tz='GMT', format="%Y-%m-%d %H:%M:%S")
       if (is.null(tlimStr))
         endT <- rDAF::tlag(endT,mlag=1)
       endT <- endT - 1                          # 1 second before the (open) upper bound
@@ -86,24 +86,25 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
 
       seq.ou.minStr <- format(seq.ou.min, format='%Y-%m')
       seq.ou.maxStr <- format(seq.ou.max, format='%Y-%m')
-      
+     
       for (it in 1:nit) {
         setwd(dsni)
         tseq    <- seq(seq.ou.min[it], seq.ou.max[it], by='month') # input assumed to be monthly
         attr(tseq, 'tzone') <- 'GMT'
         tseqStr <-  format(tseq, format='%Y-%m')
-        fnames  <- paste(CASE[im],coh,tseqStr,'.nc',sep='')
+        fnames  <- paste(CASE[im],coh,tseqStr,'nc',sep='.')
         if (!all(file.exists(fnames)))
           stop('getClimTS:: ---ERR001-- fnames do not exist:',paste(fnames,collapse=','))
         if (length(fnames) == 1) {
           setwd(dsno)
           system(paste(Sys.LINK,file.path(dsni,fnames),'.'))             # for monthly output - just link
         } else {
-          if (by == 'year' && substr(seq.ou.minStr[it],1,4) == substr(seq.ou.maxStr[it],1,4)) # exact years
+          if (by == 'year' && substr(seq.ou.minStr[it],1,4) == substr(seq.ou.maxStr[it],1,4)) { # exact years
             dnameo <- substr(seq.ou.minStr[it],1,4)
-          else
+          } else {
             dnameo <- paste(seq.ou.minStr[it],'_',seq.ou.maxStr[it],sep='')
-          climf  <- paste(CASE[im],coh,dnameo,'.nc',sep='')
+          }
+          climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
           cat('getClimTS:: generating', climf,'\n')
           syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')         # get climatological means: NCO -ncra
           system(syscmd)
