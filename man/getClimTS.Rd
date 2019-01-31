@@ -5,13 +5,14 @@
 components through recursive calling to NCO command ncra. All variables
 in the original files are included in the temporal means.}
 \usage{
-getClimTS(tlimStr, DOUT_S_ROOT, CASE, by = "year", allowNA = TRUE,
+getClimTS(tlimStr = NULL, DOUT_S_ROOT, CASE, by = "year", allowNA = TRUE,
              comps = NULL, loop = NULL)
 }
 \arguments{
   \item{tlimStr}{CHARACTER, [2], close,open interval [tlimyStr)
     representing the time-window for the model climatic averages. The format
-  is AAAA-MM-DD HH:MM:SS}
+  is AAAA-MM-DD HH:MM:SS. NULL will result in climatic TS over all
+  available files in input folders}
   \item{DOUT_S_ROOT}{CHARACTER, [m], path to model data storage for
     IO, as defined in CESM documentation. It is assumed that input
     NetCDF files are given on a monthly basis, and that for each 'im'

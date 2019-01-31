@@ -1,4 +1,4 @@
-getClimTS <- function(tlimStr, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps=NULL, loop=NULL) {
+getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps=NULL, loop=NULL) {
 
   # tlimStr     :: [2]   CHARACTER: time limits
   # DOUT_S_ROOT :: [m]   CHARACTER: path to CESM output archive
@@ -37,19 +37,6 @@ getClimTS <- function(tlimStr, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps
   seasons$JAS <- 7:9
   seasons$OND <- 10:12
 
-  staT    <-  as.POSIXct(tlimStr[1], tz='GMT')
-  endT    <-  as.POSIXct(tlimStr[2], tz='GMT') - 1          # 1 second before the (open) upper bound
-
-  seq.ou.min    <-  seq(staT,endT,by=by)
-  seq.ou.max    <-  c(seq.ou.min[-1]-1,endT)
-  attr(seq.ou.min, 'tzone') <- 'GMT'  
-  attr(seq.ou.max, 'tzone') <- 'GMT'
-  
-  nit <- length(seq.ou.min)                                   # number of integration times
-
-  seq.ou.minStr <- format(seq.ou.min, format='%Y-%m')
-  seq.ou.maxStr <- format(seq.ou.max, format='%Y-%m')
-
   # get climatological months/seasons/years
   cwd <- getwd()
   m <- length(DOUT_S_ROOT)
@@ -60,7 +47,6 @@ getClimTS <- function(tlimStr, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps
     for (ic in 1:length(comps)) {
       com <- comps[ic]
       coh <- comph[ic]      
-    
       dsni   <- file.path(DOUT_S_ROOT[im],com,'hist')
       if (!file.exists(dsni)) {
         if (allowNA)
@@ -68,6 +54,7 @@ getClimTS <- function(tlimStr, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps
         else
           stop('getClimTS: simulation not found for:',CASE[im])
       }
+
       dsno <- file.path(DOUT_S_ROOT[im],com,'post')
       if (!is.null(loop))                                         # loop subfolder
         dsno <- file.path(dsno,loop)
@@ -76,6 +63,30 @@ getClimTS <- function(tlimStr, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps
       if(!file.exists(dsno))
         dir.create(dsno, recursive=TRUE)
 
+      if (is.null(tlimStr)) {
+        fnames <- dir(dsni, pattern=paste('*',coh,'[[:digit:]]',sep='.'))            # all available monthly files
+        mtags  <- substr(fnames,nchar(fnames)-9,nchar(fnames)-3)
+        metlimStr <- paste(mtags[c(1,length(mtags))],'-01 00:00:00',sep='') 
+      } else {
+        metlimStr <- tlimStr
+      }
+
+      staT    <-  as.POSIXct(metlimStr[1], tz='GMT', format="%Y-%m-%d %H:%M:%S")
+      endT    <-  as.POSIXct(metlimStr[2], tz='GMT', format="%Y-%m-%d %H:%M:%S")
+      if (is.null(tlimStr))
+        endT <- rDAF::tlag(endT,mlag=1)
+      endT <- endT - 1                          # 1 second before the (open) upper bound
+      
+      seq.ou.min    <-  seq(staT,endT,by=by)
+      seq.ou.max    <-  c(seq.ou.min[-1]-1,endT)
+      attr(seq.ou.min, 'tzone') <- 'GMT'  
+      attr(seq.ou.max, 'tzone') <- 'GMT'
+  
+      nit <- length(seq.ou.min)                                   # number of integration times
+
+      seq.ou.minStr <- format(seq.ou.min, format='%Y-%m')
+      seq.ou.maxStr <- format(seq.ou.max, format='%Y-%m')
+      
       for (it in 1:nit) {
         setwd(dsni)
         tseq    <- seq(seq.ou.min[it], seq.ou.max[it], by='month') # input assumed to be monthly
