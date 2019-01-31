@@ -1,6 +1,6 @@
 getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRUE, comps=NULL, loop=NULL) {
 
-  # tlimStr: limits for the statistics
+  # tlimStr     :: [2]   CHARACTER: time limits
   # DOUT_S_ROOT :: [m]   CHARACTER: path to CESM output archive
   # CASE        :: [m]   CHARACTER: name of CESM CASE
   # getMonhts   :: [1]   LOGICAL: if monthly means have been previous obtained. This can be set to FALSE
@@ -12,6 +12,7 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
   # this is a wrapper around the NCO command ncra
   # getMonths:: if FALSE, allows for reconstructing seasonal and annual means from previously generated climatic months
 
+  Sys.LINK   <- 'ln -fs'    
   Sys.MOVE   <- 'mv -fv'   
   allcomps <- c("atm",   "ice",     "lnd",     "ocn",  "rof")
   allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0") # monthly input: $CASE.$comph.AAAA-MM.nc
@@ -20,19 +21,19 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
     comps <- allcomps
   if (!all(comps %in% allcomps))
     stop('getClimMeans:: input comps not defined in CESM compset')  
-
   comph <- allcomph[match(comps, allcomps)]
 
-  tstaT    <-  as.POSIXct(tlimStr[1], tz='GMT')
-  tendT    <-  as.POSIXct(tlimStr[2], tz='GMT')-1         # 1 second before the upper bound
-  seq.month <- seq(tstaT,tendT,by='month')                # select a subset for analysis
-  seq.mStr  <- substr(datePOSIXct(seq.month),1,7)
+  seasons <- list()
+  seasons$JFM <- 1:3
+  seasons$AMJ <- 4:6
+  seasons$JAS <- 7:9
+  seasons$OND <- 10:12
 
-   seasons <- list()
-   seasons$JFM <- 1:3
-   seasons$AMJ <- 4:6
-   seasons$JAS <- 7:9
-   seasons$OND <- 10:12
+  staT    <-  as.POSIXct(tlimStr[1], tz='GMT')
+  endT    <-  as.POSIXct(tlimStr[2], tz='GMT') - 1          # 1 second before the (open) upper bound
+  
+  seq.month <- seq(staT,endT,by='month')                    # select a subset for analysis
+  seq.mStr  <- substr(datePOSIXct(seq.month),1,7)
 
   # get climatological months/seasons/years
   cwd <- getwd()
@@ -51,7 +52,7 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
         if (allowNA)
           next
         else
-          stop('getClimMeans: simulation not found for im: ',CASE[im])
+          stop('getClimMeans: simulation not found for: ',CASE[im])
       } 
       dsno <- file.path(DOUT_S_ROOT[im],com,'post')
       if (!is.null(loop))
