@@ -1,4 +1,4 @@
-getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps=NULL, loop=NULL) {
+getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps=NULL, loop=NULL, overwrite=FALSE) {
 
   # tlimStr     :: [2]   CHARACTER: time limits
   # DOUT_S_ROOT :: [m]   CHARACTER: path to CESM output archive
@@ -95,7 +95,7 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
         fnames  <- paste(CASE[im],coh,tseqStr,'nc',sep='.')
         if (!all(file.exists(fnames)))
           stop('getClimTS:: ---ERR001-- fnames do not exist:',paste(fnames,collapse=','))
-        if (length(fnames) == 1) {
+        if (length(fnames) == 1) {                                       # under the assumptions: monthly IO
           setwd(dsno)
           system(paste(Sys.LINK,file.path(dsni,fnames),'.'))             # for monthly output - just link
         } else {
@@ -105,6 +105,8 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
             dnameo <- paste(seq.ou.minStr[it],'_',seq.ou.maxStr[it],sep='')
           }
           climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
+          if (!overwrite && file.exists(file.path(dsno,climf)))
+            next
           cat('getClimTS:: generating', climf,'\n')
           syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')         # get climatological means: NCO -ncra
           system(syscmd)

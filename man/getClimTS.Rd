@@ -6,7 +6,7 @@ components through recursive calling to NCO command ncra. All variables
 in the original files are included in the temporal means.}
 \usage{
 getClimTS(tlimStr = NULL, DOUT_S_ROOT, CASE, by = "year", allowNA = TRUE,
-             comps = NULL, loop = NULL)
+             comps = NULL, loop = NULL, overwrite = FALSE)
 }
 \arguments{
   \item{tlimStr}{CHARACTER, [2], close,open interval [tlimyStr)
@@ -26,6 +26,8 @@ getClimTS(tlimStr = NULL, DOUT_S_ROOT, CASE, by = "year", allowNA = TRUE,
     members are not present}
   \item{comps}{CHARACTER, [>=1],  vector of  model components to be analysed, in: ["atm",   "ice",     "lnd",     "ocn",  "rof"]}
   \item{loop}{CHARACTER, if not NULL, output for each component $com will be stored in subfolder '$DOUT_S_ROOT[im]/$com/post/$loop'  }
+  \item{overwrite}{LOGICAL, if FALSE, only non existing output fiels
+    will be recalculated}
 }
 \details{
  If \code{comps} is NULL, all components shown above are obtained. This
