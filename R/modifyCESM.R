@@ -12,7 +12,7 @@ modifyCESM <- function(x, mcom, dsn, fname, xnames=NULL, except='', clean=TRUE) 
   if (m > 1)
     cat('modifyCESM:: --ensemble input | m=',m,'--\n',sep='')
 
-  if (!(mcom %in% c('DRV','CAM','CLM','RTM','CICE','POP2')))
+  if (!(mcom %in% c('DRV','CAM','CLM','RTM','CICE','POP2','DOCN')))
     stop('modifyCESM:: --unknown mcom--')
 
   if (is.null(x)) {
@@ -27,11 +27,15 @@ modifyCESM <- function(x, mcom, dsn, fname, xnames=NULL, except='', clean=TRUE) 
     if (any(sapply(x[islist],length) != m))
      stop('modifyCESM:: --found ensemble input list with length != m--')
   }
-  #browser()
+
   for (im in 1:m) {
     # a) remove previous parameter
-    if (clean) {
      fnamep <- file.path(dsn[im],fname)
+     if (!file.exists(fnamep)) {
+       cat('file:',fname,'does not exist. No modification applies\n')
+       next
+     }
+     if (clean) {
      foo <- system(paste('grep -vn ^!',fnamep))
      if (foo != 1) {
        l2delete <- as.numeric(sapply(strsplit(system(paste('grep -vn ^!',fnamep),intern=TRUE),':',fixed=TRUE), 
@@ -39,8 +43,8 @@ modifyCESM <- function(x, mcom, dsn, fname, xnames=NULL, except='', clean=TRUE) 
        system(paste("sed -i '",min(l2delete),",",max(l2delete),"d' ",fnamep,sep=''))
      }
     }
-
-    zo <- file(file.path(dsn[im],fname),'a')
+    
+    zo <- file(fnamep, 'a')
 
     vnames <- names(x)
     if (is.null(xnames))                              # write all
