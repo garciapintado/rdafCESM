@@ -1,4 +1,4 @@
-getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRUE, comps=NULL, loop=NULL) {
+getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRUE, comps=NULL, loop=NULL, overwrite=FALSE) {
 
   # tlimStr     :: [2]   CHARACTER: time limits
   # DOUT_S_ROOT :: [m]   CHARACTER: path to CESM output archive
@@ -15,7 +15,7 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
   Sys.LINK   <- 'ln -fs'    
   Sys.MOVE   <- 'mv -fv'   
   allcomps <- c("atm",   "ice",     "lnd",     "ocn",  "rof")
-  allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0") # monthly input: $CASE.$comph.AAAA-MM.nc
+  allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0") # monthly input: $CASE.$Qcomph.AAAA-MM.nc
 
   if (is.null(comps))
     comps <- allcomps
@@ -33,7 +33,7 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
   endT    <-  as.POSIXct(tlimStr[2], tz='GMT') - 1          # 1 second before the (open) upper bound
   
   seq.month <- seq(staT,endT,by='month')                    # select a subset for analysis
-  seq.mStr  <- substr(datePOSIXct(seq.month),1,7)
+  seq.mStr  <- substr(rDAF::datePOSIXct(seq.month),1,7)
 
   # get climatological months/seasons/years
   cwd <- getwd()
@@ -45,8 +45,7 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
 
     for (ic in 1:length(comps)) {
       com <- comps[ic]
-      coh <- comph[ic]      
-
+      coh <- comph[ic]
       dsni <- file.path(DOUT_S_ROOT[im],com,'hist')
       if (!file.exists(dsni)) {
         if (allowNA)
@@ -69,6 +68,16 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
           fnames <- paste(CASE[im],coh,seq.mStr[seqids],'nc',sep='.')
           setwd(dsni)
           climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
+          if (file.exists(file.path(dsno,climf))) {
+            cat('getClimMeans:: file exists:',file.path(dsno,climf),'\n')  
+            if (overwrite) {
+              cat('overwriting previous monthly mean\n')  
+              file.remove(file.path(dsno,climf))
+            } else {
+              cat('skiping monthly mean\n')   
+              next
+            }
+          }
           syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')     # NCO: climatological months
           system(syscmd)
         }

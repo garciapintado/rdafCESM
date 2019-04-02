@@ -105,8 +105,10 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
             dnameo <- paste(seq.ou.minStr[it],'_',seq.ou.maxStr[it],sep='')
           }
           climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
-          if (!overwrite && file.exists(file.path(dsno,climf)))
+          if (!overwrite && file.exists(file.path(dsno,climf))) {
+            cat('getClimTS:: file exists:',file.path(dsno,climf),'\n')  
             next
+          } 
           cat('getClimTS:: generating', climf,'\n')
           syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')         # get climatological means: NCO -ncra
           system(syscmd)
