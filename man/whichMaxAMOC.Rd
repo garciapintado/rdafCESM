@@ -5,7 +5,8 @@
   NetCDF CESM POP2 history file. the default values get values for the
   atlantic Ocean}
 \usage{
-whichMaxAMOC(fname, dimbounds = NULL, moc_ic = 1, moc_itr = 2)
+whichMaxAMOC(fname, dimbounds = NULL, moc_ic = 1, moc_itr = 2,
+             getExp = 'S')
 }
 \arguments{
   \item{fname}{CHARACTER, input NetCDF file, with path included}
@@ -15,12 +16,17 @@ whichMaxAMOC(fname, dimbounds = NULL, moc_ic = 1, moc_itr = 2)
     expressed in centimeters}
   \item{moc_ic}{INTEGER, index indicating one out of ["Eulerian Mean","Eddy-Induced (bolus)", "Submeso"]}
   \item{moc_itr}{INTEGER, index indicating one out of  ["Global Ocean - Marginal Seas",
-                           "Atlantic Ocean + Mediterranean Sea + Labrador Sea + GIN Sea + Arctic Ocean + Hudson Bay"]
-  }
+                           "Atlantic Ocean + Mediterranean Sea +
+			   Labrador Sea + GIN Sea + Arctic Ocean + Hudson Bay"]}
+  \item{getExp}{REAL, vector of latitudes at which the maximum value of
+    the MOC export is evaluated, or a CHARACTER vector with 'S','N' or
+    both 'SN'. NULL for no calculation}
 }
 \details{
   The function has default hardcoded values for latitude limits as
-  [0,50] and depth as [500,Inf] meters.
+  [0,50] and depth as [500,Inf] meters. Evaluation of water export at
+  'S' is defined by the point at the tip of Africa for the Atlantic. 'N'
+  is still not defined in this version.
 }
 \value{
 A vector of length=3, with the names ['maxlat','maxz','maxval']

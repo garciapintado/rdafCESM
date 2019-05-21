@@ -4,9 +4,11 @@ import(Matrix, except=tail)
 import(
     ncdf4,
     rDAF,
+    rdafPlot,
     splancs
 )
-
+importFrom("grDevices", "dev.cur", "dev.new", "dev.off", "pdf")
+importFrom("graphics", "contour", "layout", "lcm", "par", "plot")
 importFrom("MASS", "mvrnorm")
-importFrom("stats", "qnorm", "quantile", "sd", "shapiro.test")
+importFrom("stats", "approx", "qnorm", "quantile", "sd", "shapiro.test")
 

@@ -65,6 +65,7 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
 
       if (is.null(tlimStr)) {
         fnames <- dir(dsni, pattern=paste('*',coh,'[[:digit:]]',sep='.'))            # all available monthly files
+        fnames <- fnames[- grep('ncra.tmp', fnames)]
         mtags  <- substr(fnames,nchar(fnames)-9,nchar(fnames)-3)
         metlimStr <- paste(mtags[c(1,length(mtags))],'-01 00:00:00',sep='') 
       } else {

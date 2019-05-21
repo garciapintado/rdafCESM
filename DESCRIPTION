@@ -3,7 +3,7 @@ Version: 1.0-0
 Type: Package
 Title: Setup and Assimilation of CESM
 Date: 2018-10-25
-Imports: MASS, Matrix, ncdf4, rDAF, stats, splancs
+Imports: MASS, Matrix, ncdf4, rDAF, rdafPlot, stats, splancs
 Author: Javier Garcia-Pintado
 Maintainer: Javier Garcia-Pintado <jgarciapintado@marum.de>
 Description: Setup of CESM and assimilation via R scripts and the rDAF package. 
