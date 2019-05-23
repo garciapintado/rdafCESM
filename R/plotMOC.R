@@ -83,12 +83,13 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
                     ULAT$vals[mask], method='constant')$y
   bath <- aggregate(HU[mask], by=list(bathLat), FUN=max)  # data.frame of 1deg maximum meridional bathymetry  
   names(bath) <- c('lat','z')
+  bath <- do.call(cbind,ksmooth(bath$lat,bath$z,bandwidth=2))
   bath <- rbind(c(bathLatlim[1],700000),
                 c(bathLatlim[1],bath[1,2]),
                 bath,
                 c(bathLatlim[2],tail(bath[,2],1)),
                 c(bathLatlim[2],700000))
-  bath <- ksmooth(bath$lat,bath$z,bandwidth=2)
+
   #dev.new();plot(bath$lat,bath$z,type='l', col='navyblue',ylim=c(600000,0))
   
   if (is.null(xlim))
