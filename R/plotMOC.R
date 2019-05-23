@@ -1,8 +1,8 @@
 plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
-                    xlim=c(-35,88), ylim=NULL, vlim=c(-10,30), supcol=NULL,
+                    xlim=NULL, ylim=NULL, vlim=c(-10,30), supcol=NULL,
                     nlevels=21,
                     yscl=1.E-05, pretty_by=10, main='', xlab='Latitude',
-                    ylab='Depth [km]', it=1) {
+                    ylab='Depth [km]', it=1, add_bath=TRUE, bath_col='grey20', use_contour=TRUE) {
 
   # fname     :: POP2 NetCDF file, including path, from which AMOC is obtained
   # pdffile   :: if not NULL, a new PDF is created
@@ -15,9 +15,17 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   # nlevels   :: ncolors+1
   # yscl      :: 1.E-05 default to convert original [cm] to [km] in depth vector
   # pretty_by :: increment for colorbar ticks. NULL for automated pretty ones.
-  # it        :: for multistep grids, index of the requested time   
+  # it        :: for multistep grids, index of the requested time
+
+  # CESM::POP2 MOC grid dimension names:
+  # "lat_aux_grid moc_z moc_components transport_region time"
+
+  REGION_MASK  <- NULL # nullify only to avoid compiler note on unexisting variables
+  ULAT         <- NULL
+  ma <- function(x, n=12){stats::filter(x,rep(1/n,n), sides=2)}
+    
   nci <- nc_open(fname)
-  vnames <- c('TLONG','TLAT','ULAT','REGION_MASK','lat_aux_grid','moc_z', 'MOC')             # support variables, each: [nlon,nlat]
+  vnames <- c('TLONG','TLAT','ULONG','ULAT','REGION_MASK','lat_aux_grid','moc_z', 'MOC')             # support variables, each: [nlon,nlat]
   for (vname in vnames) {
     eval(parse(text=paste(vname,' <- list(); ',vname,'$att <- ncatt_get(nci,"',vname,'");',
                                                vname,'$vals <- ncvar_get(nci,"',vname,'")',sep='')))
@@ -26,28 +34,23 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   dimnames <- c('lat_aux_grid','moc_z')  
   MOC$coordinates <- strsplit(MOC$att$coordinates,' ', fixed=TRUE)
   if (!all(names(dimnames) %in% MOC$coordinates))
-    stop('whichMaxAMOC:: ---ERR001---')
+    stop('getting MOC:: ---ERR001---')
 
   vKIND <- 'MOC'
   MOC$dim  <- nci$var[[vKIND]]$dim
   if (length(dim(MOC$vals)) == 5)
     MOC$vals <- MOC$vals[,,,,it]
-  layer    <- as.numeric(MOC$vals[,,moc_ic,moc_itr]) # [n_auxlat,n_zt] = [nx,ny], where:
-
-  ncDimnames <- sapply(nci$var[[vKIND]]$dim, function(x){x$name}) # == coordinates
+  MOC$vals <- MOC$vals[,,moc_ic,moc_itr]
+  layer2D  <- MOC$vals # [n_auxlat,n_zt] = [nx,ny], where:
 
   xseq <- MOC$dim[[1]]$vals          # lat_aux_grid
   yseq <- MOC$dim[[2]]$vals*yscl     # moc_z
-  nx   <- length(xseq)               # [105]
-  ny   <- length(yseq)               # [61]
-
-  if (is.null(xlim))
-    xlim <- range(xseq)
-  if (is.null(ylim)) {
-    ylim <- rev(range(yseq))                  # reverse for MOC plots
-  }
+  nx   <- length(xseq)               # [e.g. g37:105; g16:395]
+  ny   <- length(yseq)               # [61] for both g37 & g16
+  # ncDimnames <- sapply(nci$var[[vKIND]]$dim, function(x){x$name}) # == coordinates
+  
   if (is.null(vlim))
-    vlim <- range(layer, na.rm=TRUE)
+    vlim <- range(layer2D, na.rm=TRUE)
   if (is.null(supcol))
     supcol <- rdafPlot::matlabLike0()         # 0-white centered divergent colorscale
   #browser()
@@ -65,6 +68,41 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   }
   colpal <- list(val=supval, col=supcol); class(colpal) <- "palette"
 
+  # bathymetry
+  HU  <- ncvar_get(nci,'HU')
+  mask   <- matrix(FALSE,ncol=ncol(HU),nrow=nrow(HU))
+  if (moc_itr == 1) {
+    mask[REGION_MASK$vals != 0] <- TRUE   # global ocean
+  } else {
+    regids <- c(6, 7, 8, 9, 10, 11) # atlantic, mediterranean, labrador sea, GIN sea, artic ocean, hudson bay  
+    mask[REGION_MASK$vals %in% regids] <- TRUE
+  }
+  bathLatlim <- range(ULAT$vals[mask])
+  bathLatTru <- trunc(bathLatlim)
+  bathLat <- approx(seq(bathLatTru[1],bathLatTru[2],by=2),seq(bathLatTru[1],bathLatTru[2],by=2),
+                    ULAT$vals[mask], method='constant')$y
+  bath <- aggregate(HU[mask], by=list(bathLat), FUN=max)  # data.frame of 1deg maximum meridional bathymetry  
+  names(bath) <- c('lat','z')
+  bath <- rbind(c(bathLatlim[1],700000),
+                c(bathLatlim[1],bath[1,2]),
+                bath,
+                c(bathLatlim[2],tail(bath[,2],1)),
+                c(bathLatlim[2],700000))
+  bath <- ksmooth(bath$lat,bath$z,bandwidth=2)
+  #dev.new();plot(bath$lat,bath$z,type='l', col='navyblue',ylim=c(600000,0))
+  
+  if (is.null(xlim))
+    xlim <- trunc(range(ULAT$vals[mask]))
+  if (is.null(ylim)) {
+    ylim <- rev(range(yseq))                  # reverse for MOC plots
+  }    
+    #polygon(bath[,1],bath[,2])
+    # imageQ(REGION_MASK$vals, showids=0)
+    # imageF(mask, col=c('grey80','navyblue'))
+    # HUmsk <- HU; HUmsk[!mask] <- NA
+    # imageF(HUmsk)
+#  } # end bathymetry
+  
   nc  <- 1
   nr  <- 1
   mai.main          <- c(1.6,1.6,1.0,0.5)/2.54                  # [in] margins of main figure
@@ -91,18 +129,24 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   # dev.size(units='in')
   layout(mat=mat, widths=lcm(widths*0.99), heights=lcm(heights*0.99), respect=TRUE)  
   #layout.show()
-  # layer <- matrix(ol[[i]]$MOC.Ge[,ip], nx, ny)
   par(mai=mai.main)
   par(mgp=c(2.3,1,0))
   plot(0, 0, xlim=xlim, ylim=ylim, type='n', xaxs='i', yaxs='i',
        main=main, xlab=xlab, ylab=ylab, font.lab=2, las=1)
-    # plot from top to bottom
-  #browser()                                           
-  rdafPlot::callFilledContour(xseq, yseq, matrix(layer,nx,ny), zlim=vlim,
-                              nlevels=nlevels, colpal=colpal)
-  contour(xseq, yseq, matrix(layer, nx, ny), add=TRUE , level=0, col='grey50')
 
-  #polygon(AMOCbath$x,AMOCbath$y/100000,col='grey20',border='grey10')
+  #browser()
+  if (use_contour) {
+    rdafPlot::callFilledContour(xseq, yseq, layer2D, zlim=vlim,
+                              nlevels=nlevels, colpal=colpal)
+  } else {
+    ncolors <- length(colpal$col)
+    breaks <- c(colpal$val[1],(colpal$val[-1]+colpal$val[1:(ncolors-1)])/2,colpal$val[ncolors])  
+    image(x=xseq,y=yseq, z=layer2D, col=colpal$col, breaks=breaks, add=TRUE)
+  }
+    contour(xseq, yseq, layer2D, add=TRUE , level=0, col='grey50')
+   
+  if (add_bath)
+    polygon(bath$x, bath$y*yscl, col=bath_col, border='grey10')
 
   # legend
   par(mai=mai.legend)

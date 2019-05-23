@@ -5,9 +5,9 @@
   NetCDF CESM POP2 history file.}
 \usage{
 plotMOC(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
-        xlim=c(-35,88), ylim=NULL, vlim=c(-10,30), supcol=NULL,
+        xlim=NULL, ylim=NULL, vlim=c(-10,30), supcol=NULL,
         nlevels=21, yscl=1.E-05, pretty_by=10, main='', xlab='Latitude',
-        ylab='Depth [km]', it=1)
+        ylab='Depth [km]', it=1, add_bath=TRUE, bath_col='grey20', use_contour=TRUE)
 }
 \arguments{
   \item{fname}{CHARACTER, input NetCDF file, with path included}
@@ -28,6 +28,9 @@ plotMOC(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   \item{xlab}{label for x axis}
   \item{ylab}{label for y axis}
   \item{it}{INTEGER, for multistep grids, index of the requested time}
+  \item{add_bath}{LOGICAL, whether to add bathymetry polygon}
+  \item{bath_col}{CHARACTER, color code for bathymetry polygon}
+  \item{use_contour}{LOGICAL, TRUE to use filled contours, FALSE for a gridded image}
 }
 \details{
  Plot an AMOC image and associated colorbar
