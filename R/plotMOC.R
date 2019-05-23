@@ -90,7 +90,7 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
                 c(bathLatlim[2],tail(bath[,2],1)),
                 c(bathLatlim[2],700000))
 
-  #dev.new();plot(bath$lat,bath$z,type='l', col='navyblue',ylim=c(600000,0))
+  #dev.new();plot(bath[,],bath[,2],type='l', col='navyblue',ylim=c(600000,0))
   
   if (is.null(xlim))
     xlim <- trunc(range(ULAT$vals[mask]))
@@ -147,7 +147,7 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
     contour(xseq, yseq, layer2D, add=TRUE , level=0, col='grey50')
    
   if (add_bath)
-    polygon(bath$x, bath$y*yscl, col=bath_col, border='grey10')
+    polygon(bath[,1], bath[,2]*yscl, col=bath_col, border='grey10')
 
   # legend
   par(mai=mai.legend)
