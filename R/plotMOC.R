@@ -2,7 +2,8 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
                     xlim=NULL, ylim=NULL, vlim=c(-10,30), supcol=NULL,
                     nlevels=21,
                     yscl=1.E-05, pretty_by=10, main='', xlab='Latitude',
-                    ylab='Depth [km]', it=1, add_bath=TRUE, bath_col='grey20', use_contour=TRUE) {
+                    ylab='Depth [km]', it=NULL, add_bath=TRUE, bath_col='grey20', use_contour=TRUE,
+                    get_summary=TRUE) {
 
   # fname     :: POP2 NetCDF file, including path, from which AMOC is obtained
   # pdffile   :: if not NULL, a new PDF is created
@@ -22,10 +23,9 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
 
   REGION_MASK  <- NULL # nullify only to avoid compiler note on unexisting variables
   ULAT         <- NULL
-  ma <- function(x, n=12){stats::filter(x,rep(1/n,n), sides=2)}
     
   nci <- nc_open(fname)
-  vnames <- c('TLONG','TLAT','ULONG','ULAT','REGION_MASK','lat_aux_grid','moc_z', 'MOC')             # support variables, each: [nlon,nlat]
+  vnames <- c('ULAT','REGION_MASK','lat_aux_grid','moc_z', 'MOC')             # support variables, each: [nlon,nlat]
   for (vname in vnames) {
     eval(parse(text=paste(vname,' <- list(); ',vname,'$att <- ncatt_get(nci,"',vname,'");',
                                                vname,'$vals <- ncvar_get(nci,"',vname,'")',sep='')))
@@ -38,8 +38,12 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
 
   vKIND <- 'MOC'
   MOC$dim  <- nci$var[[vKIND]]$dim
-  if (length(dim(MOC$vals)) == 5)
-    MOC$vals <- MOC$vals[,,,,it]
+  if (length(dim(MOC$vals)) == 5) {
+    if (is.null(it))
+      MOC$vals <- apply(MOC$vals,MARGIN=1:4,FUN=mean)
+    else
+      MOC$vals <- MOC$vals[,,,,it]
+  }
   MOC$vals <- MOC$vals[,,moc_ic,moc_itr]
   layer2D  <- MOC$vals # [n_auxlat,n_zt] = [nx,ny], where:
 
@@ -159,4 +163,11 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
 
   if (!is.null(pdffile))
     dev.off()
+  nc_close(nci)
+  
+  if (get_summary) {
+    ans <- summaryMOC(fname, dimbounds=NULL, moc_ic=1, moc_itr=2, it=NULL, fromPlotMOC=TRUE)
+    return(ans)
+  }  
+  invisible(0)
 } # end function plotMOC

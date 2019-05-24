@@ -7,7 +7,8 @@
 plotMOC(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
         xlim=NULL, ylim=NULL, vlim=c(-10,30), supcol=NULL,
         nlevels=21, yscl=1.E-05, pretty_by=10, main='', xlab='Latitude',
-        ylab='Depth [km]', it=1, add_bath=TRUE, bath_col='grey20', use_contour=TRUE)
+        ylab='Depth [km]', it = NULL, add_bath=TRUE, bath_col='grey20',
+        use_contour = TRUE, get_summary=TRUE)
 }
 \arguments{
   \item{fname}{CHARACTER, input NetCDF file, with path included}
@@ -27,14 +28,18 @@ plotMOC(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   \item{main}{main plot title}
   \item{xlab}{label for x axis}
   \item{ylab}{label for y axis}
-  \item{it}{INTEGER, for multistep grids, index of the requested time}
+  \item{it}{INTEGER, time index for multistep grids.  NULL (default) get
+    the mean values over all timesteps available in the netCDF file}
   \item{add_bath}{LOGICAL, whether to add bathymetry polygon}
   \item{bath_col}{CHARACTER, color code for bathymetry polygon}
-  \item{use_contour}{LOGICAL, TRUE to use filled contours, FALSE for a gridded image}
+  \item{use_contour}{LOGICAL, TRUE to use filled contours, FALSE for a
+    gridded image}
+  \item{get_summary}{LOGICAL, TRUE for an internal call to \code{summaryMOC} function}
 }
 \details{
  Plot an AMOC image and associated colorbar
 }
 \value{
-A plot on an existing or new device
+A plot on an existing or new device is generated. The return value is 0,
+or a matrix with a summary of the requested MOC if get_summary=TRUE. 
 }

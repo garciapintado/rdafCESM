@@ -1,11 +1,13 @@
-\name{whichMaxAMOC}
-\alias{whichMaxAMOC}
-\title{ Maximum Meridional Overturning Circulation from CESM POP2 history files }
-\description{Get maximum value of Meridional Overtuning Circulation for a requested
+\name{summaryMOC}
+\alias{summaryMOC}
+\title{Summary of Meridional Overturning Circulation from CESM POP2 history files }
+\description{Get global maximum, global minimum, as well as southward export at
+  South, Equator, and North of Meridional Overtuning Circulation for a requested
   NetCDF CESM POP2 history file. the default values get values for the
   atlantic Ocean}
 \usage{
-whichMaxAMOC(fname, dimbounds = NULL, moc_ic = 1, moc_itr = 2, it = 1)
+  summaryMOC(fname, dimbounds = NULL, moc_ic = 1, moc_itr = 2, it = NULL,
+             fromPlotMOC = FALSE)
 }
 \arguments{
   \item{fname}{CHARACTER, input NetCDF file, with path included}
@@ -18,13 +20,16 @@ whichMaxAMOC(fname, dimbounds = NULL, moc_ic = 1, moc_itr = 2, it = 1)
                            "Atlantic Ocean + Mediterranean Sea +
 			   Labrador Sea + GIN Sea + Arctic Ocean +
 			   HudsonBay"]}
-  \item{it}{INTEGER, time index for multistep grids}
+  \item{it}{INTEGER, time index for multistep grids. NULL (default) get
+    the mean values over all timesteps available in the netCDF file}
+  \item{fromPlotMOC}{\code{plotMOC} function shares the loading of the
+    netCDF with this function. This argument is to be set to TRUE only
+    internally when called from \code{plotMOC}}
 }
 \details{
   The function has default hardcoded values for latitude limits as
   [0,50] and depth as [500,Inf] meters.
 }
 \value{
-A matrix with the maximum MOC value, plus maximum and total values at South and
-North of the given MOC region 
+A matrix of MOC values plus corresponding latitude and depth  
 }
