@@ -80,14 +80,14 @@ summaryMOC <- function(fname, dimbounds=NULL, moc_ic=1, moc_itr=2, it=NULL, from
   # image(lat_aux_grid$vals, moc_z$vals/100, MOC$vals, col=matlab.like(100), ylim=rev(range(moc_z$vals/100)))
   # abline(h=500*100, col='grey')
   # abline(v=dimbounds[['lat_aux_grid']], col='grey')
-  Smax <- max(layer2D[Sid,])
-  Emax <- max(layer2D[Eid,])
-  Nmax <- max(layer2D[Nid,])
+  Smax <- max(layer2D[Sid,mskl[[2]]])
+  Emax <- max(layer2D[Eid,mskl[[2]]])
+  Nmax <- max(layer2D[Nid,mskl[[2]]])
   ans <- rbind(maxMOC,
                minMOC,
-               c(xseq[Sid],yseq[which.max(layer2D[Sid,])],Smax),
-               c(xseq[Sid],yseq[which.max(layer2D[Eid,])],Emax),               
-               c(xseq[Nid],yseq[which.max(layer2D[Nid,])],Nmax))
+               c(xseq[Sid],yseq[which(layer2D[Sid,] == Smax)],Smax),
+               c(xseq[Eid],yseq[which(layer2D[Eid,] == Emax)],Emax),               
+               c(xseq[Nid],yseq[which(layer2D[Nid,] == Nmax)],Nmax))
   rownames(ans) <- c('max','min','Smax','Emax','Nmax')
   colnames(ans) <- c('lat_aux_grid','moc_z','val')
 
