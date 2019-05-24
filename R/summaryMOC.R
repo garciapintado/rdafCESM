@@ -67,7 +67,7 @@ summaryMOC <- function(fname, dimbounds=NULL, moc_ic=1, moc_itr=2, it=NULL, from
   for (id in 1:length(dimnames)) {
     #if (MOC$dim[[id]]$name != dimnames[id]) {
     #  stop('whichMaxAMOC:: ---ERR002---') }
-    diml[[id]] <- MOC$dim[[id]]$vals
+    diml[[id]] <- vdim[[id]]$vals
     mskl[[id]] <- diml[[id]] >= min(dimbounds[[id]]) &
                   diml[[id]] <= max(dimbounds[[id]])
   }

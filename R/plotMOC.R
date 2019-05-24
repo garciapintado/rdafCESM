@@ -166,8 +166,8 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   nc_close(nci)
   
   if (get_summary) {
-    ans <- summaryMOC(fname, dimbounds=NULL, moc_ic=1, moc_itr=2, it=NULL, fromPlotMOC=TRUE)
+    ans <- summaryMOC(fname, dimbounds=NULL, moc_ic=moc_ic, moc_itr=moc_itr, it=it, fromPlotMOC=FALSE)
     return(ans)
-  }  
+  } 
   invisible(0)
 } # end function plotMOC
