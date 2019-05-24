@@ -36,8 +36,6 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   if (!all(names(dimnames) %in% MOC$coordinates))
     stop('getting MOC:: ---ERR001---')
 
-  vKIND <- 'MOC'
-  MOC$dim  <- nci$var[[vKIND]]$dim
   if (length(dim(MOC$vals)) == 5) {
     if (is.null(it))
       MOC$vals <- apply(MOC$vals,MARGIN=1:4,FUN=mean)
@@ -47,8 +45,10 @@ plotMOC <- function(fname, pdffile=NULL, moc_ic=1, moc_itr=2,
   MOC$vals <- MOC$vals[,,moc_ic,moc_itr]
   layer2D  <- MOC$vals # [n_auxlat,n_zt] = [nx,ny], where:
 
-  xseq <- MOC$dim[[1]]$vals          # lat_aux_grid
-  yseq <- MOC$dim[[2]]$vals*yscl     # moc_z
+  vKIND <- 'MOC'  
+  vdim  <- nci$var[[vKIND]]$dim  
+  xseq <- vdim[[1]]$vals             # lat_aux_grid
+  yseq <- vdim[[2]]$vals*yscl        # moc_z
   nx   <- length(xseq)               # [e.g. g37:105; g16:395]
   ny   <- length(yseq)               # [61] for both g37 & g16
   # ncDimnames <- sapply(nci$var[[vKIND]]$dim, function(x){x$name}) # == coordinates

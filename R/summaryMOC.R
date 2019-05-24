@@ -26,8 +26,6 @@ summaryMOC <- function(fname, dimbounds=NULL, moc_ic=1, moc_itr=2, it=NULL, from
     if (!all(names(dimnames) %in% MOC$coordinates))
       stop('getting MOC:: ---ERR001---')
 
-    vKIND <- 'MOC'
-    MOC$dim <- nci$var[[vKIND]]$dim
     if (length(dim(MOC$vals)) == 5) {
       if (is.null(it))
         MOC$vals <- apply(MOC$vals,MARGIN=1:4,FUN=mean)
@@ -36,14 +34,20 @@ summaryMOC <- function(fname, dimbounds=NULL, moc_ic=1, moc_itr=2, it=NULL, from
     }
     MOC$vals <- MOC$vals[,,moc_ic,moc_itr]
     layer2D  <- MOC$vals # [n_auxlat,n_zt] = [nx,ny], where
-  
-    xseq <- MOC$dim[[1]]$vals          # lat_aux_grid
-    yseq <- MOC$dim[[2]]$vals          # moc_z
+
+    vKIND <- 'MOC'    
+    vdim <- nci$var[[vKIND]]$dim
+    xseq <- vdim[[1]]$vals             # lat_aux_grid
+    yseq <- vdim[[2]]$vals             # moc_z
     nx   <- length(xseq)               # [e.g. g37:105; g16:395]
     ny   <- length(yseq)               # [61] for both g37 & g16
     # ncDimnames <- sapply(nci$var[[vKIND]]$dim, function(x){x$name}) # == coordinates
-  } # end if(!fromPlotMOC)
-  
+  } else { # fromPlotMOC == TRUE
+    # copy variables from the calling environment
+    vnames <- c('REGION_MASK','ULAT','xseq','vdim','layer2D')
+    for (vname in vnames) {
+      eval(parse(text=paste(vname,' <- get("',vname,'", parent.frame())',sep=''))) }
+  }
   # get SN coordinates for default   
   ULAT$vals[REGION_MASK$vals != 6] <- NA # always take Atlantic bound even for global meridional circulation evaluation
   latSN <- range(ULAT$vals, na.rm=TRUE)  # Atlantic South and North latitude
