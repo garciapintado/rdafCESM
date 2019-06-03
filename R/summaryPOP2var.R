@@ -5,13 +5,17 @@ summaryPOP2var <- function(x, long, latg, zg, mask=NULL, z2Did=1) {
     mask <- array(TRUE,dim=dim(x))
   maxv <- max(x[mask], na.rm=TRUE)
   maxi <- which(x==maxv, arr.ind=TRUE) # [lon,lat,z]
+  if (is.matrix(maxi))
+    maxi <- maxi[1,]                                      # anyone
   if (length(maxi) == 2) {maxi = c(maxi,z2Did)}           # 2D layer
   maxg <- POPid2geo(maxi, long, latg, zg)
   minv <- min(x[mask], na.rm=TRUE)
   mini <- which(x==minv, arr.ind=TRUE) # [lon,lat,z]
+  if (is.matrix(mini))
+    mini <- mini[1,]                                      # anyone
   if (length(mini) == 2) {mini = c(mini,z2Did)}           # 2D layer
   ming <- POPid2geo(mini, long, latg, zg)
-
+  #browser()
   ans <- rbind(c(mini,ming,minv),
                c(maxi,maxg,maxv),
                c(rep(NA,6),mean(x[mask], na.rm=TRUE)),
