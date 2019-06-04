@@ -8,7 +8,7 @@ import(
     splancs
 )
 importFrom("grDevices", "dev.cur", "dev.new", "dev.off", "pdf")
-importFrom("graphics", "contour", "layout", "lcm", "par", "plot", "polygon")
+importFrom("graphics", "contour", "layout", "lcm", "lines", "par", "plot", "polygon")
 importFrom("MASS", "mvrnorm")
 importFrom("stats", "aggregate", "approx", "ksmooth", "qnorm", "quantile", "sd", "shapiro.test")
 importFrom("utils", "tail")

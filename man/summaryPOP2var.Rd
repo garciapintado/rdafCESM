@@ -21,6 +21,11 @@
     even if the variable refers to an ocean top surface variable [e.g. the
     skin layer]}
 }
+\details{
+The mean value provided in this function is the direct mean for the,
+possibly masked, grid values. A weighted mean that condisers the volumne
+of each model cell is provided by \code{ocnWmean}.
+}
 \value{
-A matrix with a global summmary of a POP2 variable
+A matrix with a global summmary of a POP2 variable. 
 }
