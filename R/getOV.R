@@ -63,6 +63,6 @@ getOV <- function() {
                                343.05, 60.74, 2530*cm,
                                340.48, 59.88, 2768*cm,
                                338.03, 58.27, 3011*cm), 6, 3, byrow=TRUE,
-                               dimnames=list(1:7,c('lon','lat','z')))
+                               dimnames=list(1:6,c('lon','lat','z')))
  return(OV)
 }
