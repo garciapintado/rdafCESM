@@ -1,21 +1,23 @@
-getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRUE, comps=NULL, loop=NULL, overwrite=FALSE) {
+getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRUE, comps=NULL, loop=NULL, overwrite=FALSE, compvars=NULL) {
 
   # tlimStr     :: [2]   CHARACTER: time limits
   # DOUT_S_ROOT :: [m]   CHARACTER: path to CESM output archive
   # CASE        :: [m]   CHARACTER: name of CESM CASE
-  # getMonhts   :: [1]   LOGICAL: if monthly means have been previous obtained. This can be set to FALSE
+  # getMonths   :: [1]   LOGICAL: if monthly means have been previous obtained. This can be set to FALSE
   # allowNA     :: [1]   LOGICAL: TRUE to stop in model archive output is not found
   # comps       :: [>=1] CHARACTER of model components, over which to conduct means. NULL for all model components below
   # loop        :: [1]   CHARACTER: If not NULL, output for each component $com will be stored in subfolder '$DOUT_S_ROOT/$com/post/$loop'  
   #
+  # compvars    :: list: every named element in the list is a component, for which a selected names are ketp in the resulting files
+  #                      non existing components in this list are assumed to invclude all variables
+  # +++ purpose +++
   # get climatological months, climatological seasons, and climatological years as netCDF file
   # this is a wrapper around the NCO command ncra
-  # getMonths:: if FALSE, allows for reconstructing seasonal and annual means from previously generated climatic months
-
+     
   Sys.LINK   <- 'ln -fs'    
   Sys.MOVE   <- 'mv -fv'   
-  allcomps <- c("atm",   "ice",     "lnd",     "ocn",  "rof")
-  allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0") # monthly input: $CASE.$Qcomph.AAAA-MM.nc
+  allcomps <- c("atm",    "ice",    "lnd",     "ocn",  "rof")
+  allcomph <- c("cam.h0", "cice.h", "clm2.h0", "pop.h","rtm.h0") # monthly input: $CASE.$comph.AAAA-MM.nc
 
   if (is.null(comps))
     comps <- allcomps
@@ -66,7 +68,6 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
           dnameo <- paste(paste(yearRange,collapse='-'),monStr,sep='-')
           seqids <- grep(paste('-',monStr,sep=''),seq.mStr)
           fnames <- paste(CASE[im],coh,seq.mStr[seqids],'nc',sep='.')
-          setwd(dsni)
           climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
           if (file.exists(file.path(dsno,climf))) {
             cat('getClimMeans:: file exists:',file.path(dsno,climf),'\n')  
@@ -78,11 +79,24 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
               next
             }
           }
-          syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')     # NCO: climatological months
-          system(syscmd)
+          #compvars <- list()
+          #compvars[['ocn']] <- c('TEMP','SALT','MOC','UVEL','VVEL','WVEL')
+          setwd(dsni)
+          if (!is.null(compvars)) {                                             # if requested, select subset of variables
+            if (!is.null(compvars[[com]])) {
+              prefix       <- paste(compvars[[com]],collapse='.')
+              prefixfnames <- paste(prefix, fnames, sep='.')
+              climf        <- paste(prefix, climf, sep='.') 
+              for (i in 1:length(fnames)) {
+                system(paste('ncks -O -v', paste(compvars[[com]],collapse=','), fnames[i], prefixfnames[i])) 
+              }
+              fnames <- prefixfnames
+            }
+          } # end if (!is.null(compvars))
+          system(paste('ncra',paste(fnames, collapse=' '),climf,sep=' '))     # NCO: climatological month
+          system(paste(Sys.MOVE,climf,dsno))
         }
-        syscmd <- paste(Sys.MOVE,' ',CASE[im],'.',coh,'.',paste(yearRange,collapse='-'),'* ',dsno,sep='')
-        system(syscmd)
+        #system(paste(Sys.MOVE,' ', CASE[im],'.',coh,'.',paste(yearRange,collapse='-'),'* ',dsno,sep=''))
       } # end if (getMonths)
 
       setwd(dsno)
@@ -92,6 +106,13 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
         dnameo <- paste(paste(yearRange,collapse='-'),names(seasons)[ise],                     sep='-')
         fnames <- paste(CASE[im],coh,dnamei,'nc',sep='.')
         climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
+        if (!is.null(compvars)) {                                             # if requested, select subset of variables
+          if (!is.null(compvars[[com]])) {
+            prefix <- paste(compvars[[com]],collapse='.')
+            fnames <- paste(prefix, fnames, sep='.')
+            climf  <- paste(prefix, climf, sep='.')
+          }
+        }
         if (file.exists(file.path(dsno,climf)))
           file.remove(file.path(dsno,climf))
         syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')  
@@ -102,6 +123,13 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
       dnameo <- paste(paste(yearRange,collapse='-'),'ann',sep='-')              # get climatological year
       fnames <- paste(CASE[im],coh,dnamei,'nc',sep='.')
       climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
+      if (!is.null(compvars)) {                                             # if requested, select subset of variables
+        if (!is.null(compvars[[com]])) {
+          prefix <- paste(compvars[[com]],collapse='.')
+          fnames <- paste(prefix, fnames, sep='.')
+          climf  <- paste(prefix, climf, sep='.')
+        }
+      }      
       if (file.exists(file.path(dsno,climf)))
         file.remove(file.path(dsno,climf))
       syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')  
