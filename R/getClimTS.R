@@ -1,4 +1,4 @@
-getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps=NULL, loop=NULL, overwrite=FALSE) {
+getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, comps=NULL, loop=NULL, overwrite=FALSE, compvars=NULL) {
 
   # tlimStr     :: [2]   CHARACTER: time limits
   # DOUT_S_ROOT :: [m]   CHARACTER: path to CESM output archive
@@ -7,7 +7,9 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
   # allowNA     :: [1]   LOGICAL: TRUE to stop in model archive output is not found
   # comps       :: [>=1] CHARACTER of model components, over which to conduct means. NULL for all model components below
   # loop        :: [1]   CHARACTER: If not NULL, output for each component $com will be stored in subfolder '$DOUT_S_ROOT/$com/post/$loop'  
-    
+  #
+  # compvars    :: list: every named element in the list is a component, for which a selected names are ketp in the resulting files
+  #                      non existing components in this list are assumed to invclude all variables                                                                  
   # purpose: obtain time series of mean values integrated for a specific dt for POP2 netCDF files
   # tlimStr is a closed-open interval at both ends. That is, the last date included date is one second less than tlimStr[2]
   # For example: ["1850-01-01 00:00:00","1910-01-01 00:00:00") => ["1909-12-31 23:59:59"] as end time.
@@ -110,12 +112,19 @@ getClimTS <- function(tlimStr=NULL, DOUT_S_ROOT, CASE, by='year', allowNA=TRUE, 
             dnameo <- paste(seq.ou.minStr[it],'_',seq.ou.maxStr[it],sep='')
           }
           climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
+          syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ') # get mean: NCO-ncra
+          if (!is.null(compvars)) {
+            if (!is.null(compvars[[com]])) {
+               prefix <- paste(compvars[[com]],collapse='.')
+               climf  <- paste(prefix, climf, sep='.')
+               syscmd <- paste('ncra -v', paste(compvars[[com]],collapse=','), paste(fnames, collapse=' '),climf,sep=' ')
+            }
+          }     
           if (!overwrite && file.exists(file.path(dsno,climf))) {
             cat('getClimTS:: file exists:',file.path(dsno,climf),'\n')  
             next
           } 
           cat('getClimTS:: generating', climf,'\n')
-          syscmd <- paste('ncra',paste(fnames, collapse=' '),climf,sep=' ')         # get climatological means: NCO -ncra
           system(syscmd)
           system(paste(Sys.MOVE,climf,dsno,sep=' '))
         }

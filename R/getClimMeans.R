@@ -69,6 +69,12 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
           seqids <- grep(paste('-',monStr,sep=''),seq.mStr)
           fnames <- paste(CASE[im],coh,seq.mStr[seqids],'nc',sep='.')
           climf  <- paste(CASE[im],coh,dnameo,'nc',sep='.')
+          if (!is.null(compvars)) {                                             # needed here to check climf existence
+            if (!is.null(compvars[[com]])) {
+              prefix <- paste(compvars[[com]],collapse='.')
+              climf  <- paste(prefix, climf, sep='.') 
+            }
+          }
           if (file.exists(file.path(dsno,climf))) {
             cat('getClimMeans:: file exists:',file.path(dsno,climf),'\n')  
             if (overwrite) {
@@ -79,14 +85,11 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
               next
             }
           }
-          #compvars <- list()
-          #compvars[['ocn']] <- c('TEMP','SALT','MOC','UVEL','VVEL','WVEL')
           setwd(dsni)
           if (!is.null(compvars)) {                                             # if requested, select subset of variables
             if (!is.null(compvars[[com]])) {
               prefix       <- paste(compvars[[com]],collapse='.')
               prefixfnames <- paste(prefix, fnames, sep='.')
-              climf        <- paste(prefix, climf, sep='.') 
               for (i in 1:length(fnames)) {
                 system(paste('ncks -O -v', paste(compvars[[com]],collapse=','), fnames[i], prefixfnames[i])) 
               }
@@ -96,7 +99,6 @@ getClimMeans <- function(tlimStr, DOUT_S_ROOT, CASE, getMonths=TRUE, allowNA=TRU
           system(paste('ncra',paste(fnames, collapse=' '),climf,sep=' '))     # NCO: climatological month
           system(paste(Sys.MOVE,climf,dsno))
         }
-        #system(paste(Sys.MOVE,' ', CASE[im],'.',coh,'.',paste(yearRange,collapse='-'),'* ',dsno,sep=''))
       } # end if (getMonths)
 
       setwd(dsno)
