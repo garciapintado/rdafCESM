@@ -1,4 +1,4 @@
-ocnWmean <- function(nc, vname=NULL, x=NULL, mask=NULL) {
+ocnWmean <- function(nc, vname=NULL, x=NULL, mask=NULL, wsum=FALSE, getprofile=FALSE) {
  # weighted mean of an ocean variable over the ocean 3D grid
  # assumes the temperature grid for the volume weights
  #    
@@ -21,23 +21,38 @@ ocnWmean <- function(nc, vname=NULL, x=NULL, mask=NULL) {
  if (!is.null(vname))
    x <- ncvar_get(nc, vname)
 
- nt <- ifelse(length(dim(x)) == 3, 1, dim(x)[4])
- if (is.null(mask)) { # get mask from the retrieved variable
+ nt <- ifelse(length(dim(x)) == 3, 1, dim(x)[4])            # time dimension
+ if (is.null(mask)) {                                       # get mask from the retrieved variable
    if (nt == 1) {
      mask <- !is.na(x)     
    } else {
      mask <- !is.na(x[,,,1])
    }
  }
- tsumvol <- sum(tvolume[mask])   # total ocean volumen [cm^2] 
+ #tsumvol <- sum(tvolume[mask])   # total ocean volumen [cm^2] 
 
- xbar <- rep(NA,nt)
+ tvolume[!mask] <- NA
+ x[!mask]       <- NA            # for 4D x, mask is recycled for the time dimension
+ xsumz <- matrix(NA,nz,nt)       # e.g. mapping of intensive variables (as concentration) into extensive [total mass]
  if (nt == 1) {
-   xbar[1] <-  sum(x[mask]*tvolume[mask])/tsumvol   
+   xsumz[,1] <- apply(x*tvolume, MARGIN=3, sum, na.rm=TRUE)
  } else {
    for (it in 1:nt) {
-     xbar[it] <- sum(x[,,,it][mask]*tvolume[mask])/tsumvol 
+     xsumz[,it] <- apply(x[,,,it]*tvolume, MARGIN=3, sum, na.rm=TRUE)
    }
  }
- return(xbar)
-}
+ if (wsum) {                             # only makes sense for intensive variables [mapped into extensive in the output xsumz]
+   if (getprofile) {
+     return(xsumz)
+   } else {
+     return(apply(xsumz, MARGIN=2, sum))   # total sum at each time step
+   }
+ } else {                                # get mean
+   tvolz <- apply(tvolume, MARGIN=3, sum, na.rm=TRUE)   # total [masked] volume at each z level
+   if (getprofile) {                     # z-dependent mean
+     return(xsumz/tvolz)
+   } else {                              # global mean
+     return(apply(xsumz, MARGIN=2, sum) / sum(tvolz))          # [nt]
+   }    
+ }
+} # end function ocnWmean
